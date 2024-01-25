@@ -1,4 +1,4 @@
-//xor encryptor 
+//xor shellcode encryptor 
 
 using System;
 using System.Collections.Generic;
