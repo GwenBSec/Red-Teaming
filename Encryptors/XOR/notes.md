@@ -5,5 +5,5 @@
 ```
 ./xorencrypt.py <shellcode_file>
 ```
-2. XOR-encrypt our shellcode with xor-helper.cs
+2. XOR-encrypt meterpreter shellcode with xor-helper.cs
 
