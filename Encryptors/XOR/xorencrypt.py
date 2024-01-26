@@ -8,7 +8,7 @@ KEY = "mysecretkeee"
 def xor(data, key):
 
     key = str(key)
-    1 = len(key)
+    l = len(key)
     output_str = ""
 
     for i in range(len(data)):
