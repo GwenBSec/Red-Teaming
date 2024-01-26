@@ -62,7 +62,7 @@ int Inject(HANDLE hProc, unsigned char * payload, unsigned int payload_len) {
 
 }
 
-int main(void) {
+int WINAPI WinMain(HINSTANCE, hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
     void * exec_mem;
     BOOL rv;
