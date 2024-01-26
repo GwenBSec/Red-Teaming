@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-//XOR encryption function
 void XOR(char * data, size_t data_len, char * key, size_t key_len) {
     int j;
 
