@@ -60,6 +60,7 @@ int main(void) {
     int pid = 0;
     HANDLE hProc = NULL;
 
+    FreeConsole();
     pid = FindTarget("notepad.exe");
 
     if (pid) {
