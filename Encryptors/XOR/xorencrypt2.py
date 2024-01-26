@@ -1,6 +1,6 @@
 import sys
 
-KEY = "mysecretkeee"
+KEY = ""
 
 def xor(data, key):
     l = len(key)
