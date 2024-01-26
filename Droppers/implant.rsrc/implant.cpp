@@ -98,6 +98,7 @@ int WINAPI WinMain(HINSTANCE, hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
     pid = FindTarget("notepad.exe");
 
     if (pid) {
+        //try to open target process 
         hProc = OpenProcess( PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION |
                         PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, 
                         FALSE, (DWORD) pid);
